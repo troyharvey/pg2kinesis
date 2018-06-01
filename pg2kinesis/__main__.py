@@ -20,6 +20,8 @@ from .log import logger
 @click.option('--pg-slot-output-plugin', default='test_decoding',
               type=click.Choice(['test_decoding', 'wal2json']),
               help='Postgres replication slot output plugin')
+@click.option('--endpoint-url', default=None,
+              help='Kinesis endpoint url. For testing with Kinesis clones.')
 @click.option('--stream-name', '-k', default='pg2kinesis',
               help='Kinesis stream name.')
 @click.option('--message-formatter', '-f', default='CSVPayload',
@@ -33,7 +35,7 @@ from .log import logger
 @click.option('--recreate-slot', default=False, is_flag=True,
               help='Deletes the slot on start if it exists and then creates.')
 def main(pg_dbname, pg_host, pg_port, pg_user, pg_sslmode, pg_slot_name, pg_slot_output_plugin,
-         stream_name, message_formatter, table_pat, full_change, create_slot, recreate_slot):
+         endpoint_url, stream_name, message_formatter, table_pat, full_change, create_slot, recreate_slot):
 
     if full_change:
         assert message_formatter == 'CSVPayload', 'Full changes must be formatted as JSON.'
@@ -41,7 +43,7 @@ def main(pg_dbname, pg_host, pg_port, pg_user, pg_sslmode, pg_slot_name, pg_slot
 
     logger.info('Starting pg2kinesis')
     logger.info('Getting kinesis stream writer')
-    writer = StreamWriter(stream_name)
+    writer = StreamWriter(stream_name, endpoint_url=endpoint_url)
 
     with SlotReader(pg_dbname, pg_host, pg_port, pg_user, pg_sslmode, pg_slot_name,
                     pg_slot_output_plugin) as reader:

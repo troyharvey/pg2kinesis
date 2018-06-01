@@ -6,12 +6,12 @@ from botocore.exceptions import ClientError
 from .log import logger
 
 class StreamWriter(object):
-    def __init__(self, stream_name, back_off_limit=60, send_window=13):
+    def __init__(self, stream_name, endpoint_url=None, back_off_limit=60, send_window=13):
         self.stream_name = stream_name
         self.back_off_limit = back_off_limit
         self.last_send = 0
 
-        self._kinesis = boto3.client('kinesis')
+        self._kinesis = boto3.client('kinesis', endpoint_url=endpoint_url)
         self._sequence_number_for_ordering = '0'
         self._record_agg = aws_kinesis_agg.aggregator.RecordAggregator()
         self._send_window = send_window
